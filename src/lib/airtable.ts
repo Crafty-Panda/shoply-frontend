@@ -1,15 +1,11 @@
 import type { Store } from "./stores";
-import { dummyStores } from "@/data/dummyStores";
+import { supabase } from "@/integrations/supabase/client";
 
-/**
- * Fetch all stores. Currently returns dummy data.
- * When Airtable is wired up, replace the body with a fetch to the
- * Airtable API (via the connector gateway) and map records → Store.
- */
 export async function fetchStores(): Promise<Store[]> {
-  // simulate a tiny network delay so skeletons get a chance to flash
-  await new Promise((r) => setTimeout(r, 250));
-  return dummyStores;
+  const { data, error } = await supabase.functions.invoke("get-stores");
+  if (error) throw new Error(error.message);
+  if (data?.error) throw new Error(data.error);
+  return (data?.stores ?? []) as Store[];
 }
 
 export async function fetchStoreByHandle(handle: string): Promise<Store | null> {
