@@ -61,10 +61,10 @@ When navigating from a card, the directory passes its current search term throug
 
 ## Data layer
 
-Airtable infrastructure stubbed but not wired:
+Airtable is the live source of shops:
 
-- `src/lib/stores.ts` exports a `Store` TypeScript type matching the Airtable schema (name, handle, niche[], styleTags[], priceRange, area, description, coverImage, gallery[], followerTier, verified).
-- `src/lib/airtable.ts` exports `fetchStores()` — currently returns dummy data from `src/data/dummyStores.ts` (12–15 realistic Accra-flavored stores with Unsplash cover/gallery URLs). Function is async and shaped so swapping in a real Airtable fetch later is a one-file change.
+- `src/lib/stores.ts` exports a `Store` TypeScript type aligned with Airtable (name, handle, niche[], styleTags[], priceRange, area, description, coverImage, gallery[], followerTier, verified).
+- `src/lib/airtable.ts` exports `fetchStores()` / `fetchStoreByHandle()` — both call Airtable’s Web API (`api.airtable.com`) from the browser. Expected field names are documented there. Env: `VITE_AIRTABLE_TOKEN`, `VITE_AIRTABLE_BASE_ID`, `VITE_AIRTABLE_TABLE_NAME` (see root `.env.example`).
 - React Query (`useQuery`) wraps the fetch so skeleton states + caching come for free.
 - `src/hooks/useRecentlyViewed.ts` reads/writes a small list of handles in localStorage (cap at 6).
 
@@ -85,10 +85,8 @@ src/
     RecentlyViewed.tsx
     ShareButton.tsx
     Lightbox.tsx
-  data/
-    dummyStores.ts
   lib/
-    airtable.ts            ← stub fetchStores()
+    airtable.ts            ← fetchStores from Airtable Web API
     stores.ts              ← types + filter helpers
     instagram.ts           ← buildIgDeepLink(handle, searchTerm)
   hooks/
@@ -100,4 +98,4 @@ tailwind.config.ts         ← extend with semantic tokens
 
 ## Out of scope (per brief)
 
-No login, no cart, no transactions, no second CTA anywhere. Real Airtable wiring is intentionally deferred — the stub keeps the swap to one file.
+No login, no cart, no transactions, no second CTA anywhere.
