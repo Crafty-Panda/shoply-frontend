@@ -24,6 +24,7 @@ import fallbackCoverImage from "@/data/placeholder-store.png";
 
 const DEFAULT_API_ROOT = "https://api.airtable.com/v0";
 const FALLBACK_COVER_IMAGE = fallbackCoverImage;
+const FALLBACK_GALLERY_IMAGES = Array.from({ length: 4 }, () => fallbackCoverImage);
 
 interface AirtableAttachment {
   url: string;
@@ -95,6 +96,7 @@ function mapRecord(r: AirtableRecord): Store {
   const name = String(f["Store name"] ?? "Untitled");
   const cover = Array.isArray(f["Cover image"]) ? (f["Cover image"] as AirtableAttachment[])[0] : null;
   const galleryRaw = Array.isArray(f["Gallery images"]) ? (f["Gallery images"] as AirtableAttachment[]) : [];
+  const gallery = galleryRaw.map(attachmentUrl).filter(Boolean);
 
   return {
     id: r.id,
@@ -106,7 +108,7 @@ function mapRecord(r: AirtableRecord): Store {
     area: String(f["Area"] ?? "Online only"),
     description: String(f["Short description"] ?? ""),
     coverImage: cover ? attachmentUrl(cover) : FALLBACK_COVER_IMAGE,
-    gallery: galleryRaw.map(attachmentUrl).filter(Boolean),
+    gallery: gallery.length > 0 ? gallery : FALLBACK_GALLERY_IMAGES,
     followerTier: mapFollowerTier(f["Follower tier"]),
     verified: Boolean(f["Verified"]),
   };
