@@ -171,7 +171,7 @@ export function SearchOverlay({
 
           <div className="space-y-3">
             <SectionCard
-              label="What"
+              label="What?"
               hint="Style or category"
               value={draftFilters.categories ?? (draftKeywords.trim() || null)}
               expanded={expanded === "what"}
@@ -198,7 +198,7 @@ export function SearchOverlay({
             </SectionCard>
 
             <SectionCard
-              label="Where"
+              label="Where?"
               hint="Area in Accra"
               value={draftFilters.area}
               expanded={expanded === "where"}
@@ -217,7 +217,7 @@ export function SearchOverlay({
             </SectionCard>
 
             <SectionCard
-              label="Budget"
+              label="Budget?"
               hint="Price range"
               value={draftFilters.priceRange}
               expanded={expanded === "budget"}
