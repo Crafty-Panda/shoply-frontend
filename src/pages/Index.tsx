@@ -4,21 +4,31 @@ import { fetchStores } from "@/lib/airtable";
 import {
   emptyFilters,
   filterStores,
-  hasActiveFilters,
+  formatSearchSummary,
+  hasActiveSearch,
+  matchCountLabel,
+  popularNiches,
   uniqueValues,
   type FilterState,
 } from "@/lib/stores";
-import { SearchBar } from "@/components/SearchBar";
-import { FilterChips } from "@/components/FilterChips";
+import { SearchTrigger } from "@/components/SearchTrigger";
+import { SearchOverlay } from "@/components/SearchOverlay";
+import { PopularChips } from "@/components/PopularChips";
 import { StoreGrid } from "@/components/StoreGrid";
+import { StoreList } from "@/components/StoreList";
 import { StoreGridSkeleton } from "@/components/StoreGridSkeleton";
+import { StoreListSkeleton } from "@/components/StoreListSkeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { RecentlyViewed } from "@/components/RecentlyViewed";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
 const Index = () => {
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<FilterState>(emptyFilters);
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [overlaySection, setOverlaySection] = useState<"what" | "where" | "budget">("what");
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(emptyFilters);
+  const [appliedKeywords, setAppliedKeywords] = useState("");
+  const [draftFilters, setDraftFilters] = useState<FilterState>(emptyFilters);
+  const [draftKeywords, setDraftKeywords] = useState("");
   const { handles: recentHandles } = useRecentlyViewed();
 
   const { data: stores, isLoading } = useQuery({
@@ -27,12 +37,13 @@ const Index = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const niches = useMemo(() => (stores ? uniqueValues(stores, "niche") : []), [stores]);
+  const categories = useMemo(() => (stores ? uniqueValues(stores, "category") : []), [stores]);
   const areas = useMemo(() => (stores ? uniqueValues(stores, "area") : []), [stores]);
+  const popular = useMemo(() => (stores ? popularNiches(stores) : []), [stores]);
 
   const visible = useMemo(
-    () => (stores ? filterStores(stores, search, filters) : []),
-    [stores, search, filters],
+    () => (stores ? filterStores(stores, appliedKeywords, appliedFilters) : []),
+    [stores, appliedKeywords, appliedFilters],
   );
 
   const recentStores = useMemo(() => {
@@ -42,83 +53,139 @@ const Index = () => {
       .filter((s): s is NonNullable<typeof s> => !!s);
   }, [stores, recentHandles]);
 
-  const filtersActive = hasActiveFilters(filters);
-  const searchActive = search.trim().length > 0;
-  const showRecent = !searchActive && !filtersActive && recentStores.length > 0;
+  const searchApplied = hasActiveSearch(appliedFilters, appliedKeywords);
+  const summary = formatSearchSummary(appliedFilters, appliedKeywords);
+  const showRecent = !searchApplied && recentStores.length > 0;
+  const searchTerm = appliedKeywords.trim() || undefined;
+
+  const openOverlay = (section: "what" | "where" | "budget" = "what") => {
+    setDraftFilters(appliedFilters);
+    setDraftKeywords(appliedKeywords);
+    setOverlaySection(section);
+    setOverlayOpen(true);
+  };
+
+  const handleApplySearch = () => {
+    setAppliedFilters(draftFilters);
+    setAppliedKeywords(draftKeywords);
+    setOverlayOpen(false);
+  };
+
+  const handlePopularCategory = (category: string) => {
+    setDraftFilters({ ...emptyFilters, categories: category });
+    setDraftKeywords("");
+    setOverlaySection("what");
+    setOverlayOpen(true);
+  };
+
+  const clearSearch = () => {
+    setAppliedFilters(emptyFilters);
+    setAppliedKeywords("");
+    setDraftFilters(emptyFilters);
+    setDraftKeywords("");
+  };
 
   const renderEmpty = () => {
-    if (searchActive && filtersActive) {
+    if (searchApplied) {
       return (
         <EmptyState
-          message="Nothing matched — try removing a filter or searching something broader."
+          message={
+            summary
+              ? `No stores for "${summary}" — try fewer filters or a broader term.`
+              : "No stores match — try widening your search."
+          }
           actions={[
-            {
-              label: "Clear filters",
-              onClick: () => setFilters(emptyFilters),
-              variant: "outline",
-            },
-            {
-              label: "Reset all",
-              onClick: () => {
-                setFilters(emptyFilters);
-                setSearch("");
-              },
-            },
+            { label: "Edit search", onClick: () => openOverlay(), variant: "outline" },
+            { label: "Clear search", onClick: clearSearch },
           ]}
-        />
-      );
-    }
-    if (searchActive) {
-      return (
-        <EmptyState
-          message="We don't have a store for that yet — try browsing by category."
-          actions={[{ label: "Clear search", onClick: () => setSearch("") }]}
         />
       );
     }
     return (
       <EmptyState
-        message="No stores match those filters yet — try widening your search."
-        actions={[
-          { label: "Clear filters", onClick: () => setFilters(emptyFilters) },
-        ]}
+        message="No stores to show yet."
+        actions={[]}
       />
     );
   };
 
+  const renderResults = () => {
+    if (isLoading) {
+      return searchApplied ? <StoreListSkeleton /> : <StoreGridSkeleton />;
+    }
+    if (visible.length === 0) {
+      return renderEmpty();
+    }
+    if (searchApplied) {
+      return <StoreList stores={visible} searchTerm={searchTerm} />;
+    }
+    return <StoreGrid stores={visible} searchTerm={searchTerm} />;
+  };
+
   return (
-    <main className="mx-auto min-h-screen w-full max-w-xl bg-background px-4 pb-16 pt-6">
-      <header className="mb-5 flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Shoply
-        </h1>
-        <p className="text-[11px] text-muted-foreground">Accra · Instagram stores</p>
-      </header>
+    <>
+      <main className="mx-auto min-h-screen w-full max-w-xl bg-background px-4 pb-16 pt-6">
+        <header className="mb-4">
+          <h1 className="text-lg font-bold tracking-tight text-logo">shoply</h1>
+        </header>
 
-      <div className="space-y-3">
-        <SearchBar value={search} onChange={setSearch} />
-        <FilterChips
-          filters={filters}
-          onChange={setFilters}
-          niches={niches}
+        <div className="space-y-3">
+          <SearchTrigger summary={summary || undefined} onOpen={() => openOverlay()} />
+          {!searchApplied && <PopularChips categories={popular} onSelect={handlePopularCategory} />}
+        </div>
+
+        <div className="mt-5 space-y-5">
+          {showRecent && <RecentlyViewed stores={recentStores} />}
+
+          <section>
+            {searchApplied && visible.length > 0 && !isLoading && (
+              <div className="mb-2.5 flex items-baseline justify-between">
+                <p className="text-xs font-semibold text-foreground">
+                  {matchCountLabel(visible.length)}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => openOverlay()}
+                  className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Edit search
+                </button>
+              </div>
+            )}
+
+            {!searchApplied && !isLoading && stores && (
+              <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-micro text-muted-foreground">
+                {visible.length} stores
+              </p>
+            )}
+
+            {searchApplied && visible.length === 0 && !isLoading && (
+              <p className="mb-2.5 text-xs font-semibold text-foreground">
+                {matchCountLabel(0)}
+              </p>
+            )}
+
+            {renderResults()}
+          </section>
+        </div>
+      </main>
+
+      {stores && (
+        <SearchOverlay
+          open={overlayOpen}
+          stores={stores}
+          draftFilters={draftFilters}
+          draftKeywords={draftKeywords}
+          onDraftFiltersChange={setDraftFilters}
+          onDraftKeywordsChange={setDraftKeywords}
+          onSearch={handleApplySearch}
+          onClose={() => setOverlayOpen(false)}
+          categories={categories}
           areas={areas}
+          initialSection={overlaySection}
         />
-      </div>
-
-      <div className="mt-6 space-y-6">
-        {showRecent && <RecentlyViewed stores={recentStores} />}
-
-        <section>
-          {isLoading ? (
-            <StoreGridSkeleton />
-          ) : visible.length === 0 ? (
-            renderEmpty()
-          ) : (
-            <StoreGrid stores={visible} searchTerm={search.trim() || undefined} />
-          )}
-        </section>
-      </div>
-    </main>
+      )}
+    </>
   );
 };
 

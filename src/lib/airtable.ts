@@ -102,7 +102,7 @@ function mapRecord(r: AirtableRecord): Store {
     id: r.id,
     name,
     handle: handle || slugify(name),
-    niche: stringList(f["Niche"]),
+    categories: stringList(f["Category"]),
     styleTags: stringList(f["Style tags"]),
     priceRange: mapPriceRange(f["Price range"]),
     area: String(f["Area"] ?? "Online only"),
