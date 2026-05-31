@@ -3,17 +3,28 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, BadgeCheck, Instagram, MapPin } from "lucide-react";
 import { fetchStoreByHandle } from "@/lib/airtable";
-import { buildIgDeepLink } from "@/lib/instagram";
+import { buildIgDmUrl, buildIgMessage, copyIgMessage } from "@/lib/instagram";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { ShareButton } from "@/components/ShareButton";
 import { Lightbox } from "@/components/Lightbox";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const StoreProfile = () => {
   const { handle = "" } = useParams();
   const [params] = useSearchParams();
   const searchTerm = params.get("q");
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [igDialogOpen, setIgDialogOpen] = useState(false);
+  const [igDialogCopied, setIgDialogCopied] = useState(true);
   const { add } = useRecentlyViewed();
 
   const { data: store, isLoading } = useQuery({
@@ -50,7 +61,19 @@ const StoreProfile = () => {
     );
   }
 
-  const igLink = buildIgDeepLink(store.handle, searchTerm);
+  const suggestedMessage = buildIgMessage(searchTerm);
+  const igUrl = buildIgDmUrl(store.handle);
+
+  const handleInstagramMessage = async () => {
+    const copied = await copyIgMessage(searchTerm);
+    setIgDialogCopied(copied);
+    setIgDialogOpen(true);
+  };
+
+  const handleIgDialogOk = () => {
+    setIgDialogOpen(false);
+    window.location.assign(igUrl);
+  };
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-xl bg-background pb-28">
@@ -139,17 +162,42 @@ const StoreProfile = () => {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 py-3 shadow-sticky backdrop-blur">
         <div className="mx-auto w-full max-w-xl">
           <Button
-            asChild
+            type="button"
             size="lg"
             className="h-12 w-full rounded-full text-sm font-semibold"
+            onClick={handleInstagramMessage}
           >
-            <a href={igLink} target="_blank" rel="noopener noreferrer">
-              <Instagram className="mr-2 h-4 w-4" />
-              Message on Instagram
-            </a>
+            <Instagram className="mr-2 h-4 w-4" />
+            Message on Instagram
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={igDialogOpen} onOpenChange={setIgDialogOpen}>
+        <AlertDialogContent className="mx-auto max-w-sm rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {igDialogCopied ? "Message copied" : "Copy this message"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {igDialogCopied
+                ? "Paste it in the chat when Instagram opens, then tap Send."
+                : "We couldn't copy automatically — select and copy the message below."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <p className="rounded-xl bg-secondary px-4 py-3 text-sm leading-relaxed text-foreground">
+            {suggestedMessage}
+          </p>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="h-11 w-full rounded-full"
+              onClick={handleIgDialogOk}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
     </main>
