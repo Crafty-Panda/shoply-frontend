@@ -125,8 +125,9 @@ const Index = () => {
   return (
     <>
       <main className="mx-auto min-h-screen w-full max-w-xl bg-background px-4 pb-16 pt-6">
-        <header className="mb-4">
+        <header className="mb-4 flex items-baseline gap-2.5">
           <h1 className="text-lg font-bold tracking-tight text-logo">shoply</h1>
+          <p className="text-xs text-muted-foreground">find any clothing store</p>
         </header>
 
         <div className="space-y-3">
