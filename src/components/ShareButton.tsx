@@ -30,7 +30,7 @@ export function ShareButton({ title, text }: Props) {
       type="button"
       onClick={handle}
       aria-label="Share store"
-      className="flex h-10 w-10 items-center justify-center rounded-full bg-card/90 text-foreground shadow-soft backdrop-blur transition active:scale-95"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-card/90 text-foreground shadow-soft backdrop-blur transition active:opacity-80"
     >
       <Share2 className="h-4 w-4" />
     </button>

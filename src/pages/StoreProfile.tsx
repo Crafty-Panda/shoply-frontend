@@ -66,7 +66,7 @@ const StoreProfile = () => {
           <Link
             to="/"
             aria-label="Back"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-card/90 text-foreground shadow-soft backdrop-blur transition active:scale-95"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-card/90 text-foreground shadow-soft backdrop-blur transition active:opacity-80"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -122,7 +122,7 @@ const StoreProfile = () => {
               key={i}
               type="button"
               onClick={() => setLightbox(src)}
-              className="aspect-square overflow-hidden rounded-2xl bg-muted shadow-soft transition active:scale-[0.98]"
+              className="aspect-square overflow-hidden rounded-2xl bg-muted shadow-soft transition active:opacity-90"
             >
               <img
                 src={src}

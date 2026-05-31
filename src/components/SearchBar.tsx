@@ -18,7 +18,7 @@ export function SearchBar({ value, onChange }: Props) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search stores, styles, vibes…"
-        className="h-12 w-full rounded-2xl border border-border bg-card pl-11 pr-11 text-sm text-foreground placeholder:text-muted-foreground shadow-soft outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+        className="h-12 w-full rounded-2xl border border-border bg-card pl-11 pr-11 text-base text-foreground placeholder:text-muted-foreground shadow-soft outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
         aria-label="Search stores"
       />
       {value && (

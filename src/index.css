@@ -66,12 +66,22 @@
 
   html {
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* iOS Safari zooms focused inputs below 16px — keep form controls readable. */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 }
 

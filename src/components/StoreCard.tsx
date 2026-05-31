@@ -16,14 +16,14 @@ export function StoreCard({ store, searchTerm, compact }: Props) {
   return (
     <Link
       to={to}
-      className="group block overflow-hidden rounded-2xl bg-card shadow-soft transition active:scale-[0.98]"
+      className="group block overflow-hidden rounded-2xl bg-card shadow-soft transition active:opacity-90"
     >
       <div className="aspect-square overflow-hidden bg-muted">
         <img
           src={store.coverImage}
           alt={`${store.name} cover`}
           loading="lazy"
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+          className="h-full w-full object-cover transition duration-500 md:group-hover:scale-[1.03]"
         />
       </div>
       <div className="p-3">
