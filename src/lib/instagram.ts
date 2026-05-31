@@ -1,8 +1,8 @@
 export function buildIgMessage(searchTerm?: string | null): string {
   if (searchTerm?.trim()) {
-    return `Hi, I found you on Shoply and I'm looking for ${searchTerm.trim()} — do you have any available?`;
+    return `Hey, I found you on Shoply and I'm looking for ${searchTerm.trim()} — do you have any available?`;
   }
-  return `Hi, I found you on Shoply and I'd love to see what you have available`;
+  return `Hey, I found you on Shoply and I'd love to see what you have available`;
 }
 
 export function buildIgDmUrl(handle: string): string {
