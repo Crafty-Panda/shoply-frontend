@@ -1,4 +1,5 @@
 import type { Store } from "./stores";
+import fallbackCoverImage from "@/data/placeholder-store.png";
 
 /**
  * Loads stores from Airtable’s Web API. Field layout must match below.
@@ -22,7 +23,7 @@ import type { Store } from "./stores";
  */
 
 const DEFAULT_API_ROOT = "https://api.airtable.com/v0";
-const FALLBACK_COVER_IMAGE = "/src/data/placeholder-store.png";
+const FALLBACK_COVER_IMAGE = fallbackCoverImage;
 
 interface AirtableAttachment {
   url: string;
