@@ -22,7 +22,7 @@ import type { Store } from "./stores";
  */
 
 const DEFAULT_API_ROOT = "https://api.airtable.com/v0";
-const FALLBACK_COVER_IMAGE = "/placeholder.svg";
+const FALLBACK_COVER_IMAGE = "/src/data/placeholder-store.png";
 
 interface AirtableAttachment {
   url: string;
@@ -139,7 +139,9 @@ async function fetchRecordPages(filterByFormula: string): Promise<AirtableRecord
 
 export async function fetchStores(): Promise<Store[]> {
   const records = await fetchRecordPages("{Active}");
-  return records.map(mapRecord);
+  return records
+    .map(mapRecord)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 }
 
 export async function fetchStoreByHandle(rawHandle: string): Promise<Store | null> {
